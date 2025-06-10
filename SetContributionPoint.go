@@ -4,9 +4,11 @@ import (
 	// "fmt"
 	"fmt"
 	"log"
+
 	// "github.com/Chouette2100/srapi/v2"
 	"github.com/Chouette2100/srapi/v2"
 	"github.com/Chouette2100/srdblib/v2"
+	"github.com/go-gorp/gorp"
 
 	// "strings"
 	"net/http"
@@ -128,6 +130,15 @@ func SetContributionPoint(
 
 				// DBに貢献ポイントがない、または取得した貢献ポイントがDBにある貢献ポイントが一致しない
 				// 取得した貢献ポイントをDBに格納する
+				var tx *gorp.Transaction
+				tx, err = srdblib.Dbmap.Begin()
+				if err != nil {
+					err = fmt.Errorf("SetContributionPoint: Error starting transaction for user %d in event %s: %v", u.Userno, ev.Eventid, err)
+					log.Println(err)
+					continue
+				}
+				defer tx.Rollback() // トランザクションのロールバックをデファード
+
 				for i, pcr := range cr.Ranking {
 					ner := srdblib.Eventrank{
 						Eventid:   ev.Eventid,
@@ -186,6 +197,8 @@ func SetContributionPoint(
 					log.Println(err)
 					continue
 				}
+				tx.Commit() // トランザクションをコミット
+
 				log.Printf("SetContributionPoint: Inserted timetable for user %d in event %s", u.Userno, ev.Eventid)
 
 				// time.Sleep(10 * time.Second)

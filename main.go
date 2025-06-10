@@ -43,9 +43,10 @@ import (
 
 /*
 00AA00 新規作成
+00AB00 貢献ランキングの書き込みをユーザー単位のトランザクションとする
 */
 
-const version = "00AA00"
+const version = "00AB00"
 
 /*
 type EventRank struct {

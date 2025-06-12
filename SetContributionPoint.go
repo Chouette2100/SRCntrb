@@ -89,6 +89,15 @@ func SetContributionPoint(
 				// ユーザーの貢献ポイントを取得する
 				var cr *srapi.Contribution_ranking
 				cr, err = srapi.ApiEventContribution_ranking(&http.Client{}, ev.Ieventid, u.Userno)
+				if err != nil || cr == nil || len(cr.Ranking) == 0 {
+					if err != nil {
+						log.Printf("SetContributionPoint: Error fetching contribution ranking for user %d in event %s: %v", u.Userno, ev.Eventid, err)
+					} else {
+						log.Printf("SetContributionPoint: No contribution ranking found for user %d in event %s", u.Userno, ev.Eventid)
+					}
+					log.Println(err)
+					continue
+				}
 
 				// DBの貢献ポイントデータの最後の日時のデータを取得する
 				er := make([]srdblib.Eventrank, 0)

@@ -25,6 +25,13 @@ func SetContributionPoint(
 
 	defer sm.Wg.Done()
 
+	// ndayが0の場合は、現在時から1時間前までに終わったイベントを対象とする
+	bnow := false
+	if nday == 0 {
+		bnow = true
+		nday = 1
+	}
+
 	for i := 0; i < nday; i++ {
 		// 指定された日付範囲について繰り返す
 		select {
@@ -37,6 +44,10 @@ func SetContributionPoint(
 		//	日付をセット
 		ts := dt.AddDate(0, 0, i)
 		te := ts.AddDate(0, 0, 1)
+		if bnow {
+			te = time.Now()
+			ts = te.Add(-1 * time.Hour) // 1時間前までに終わったイベントを対象とする
+		}
 		// 指定された日にちに終わるイベントの一覧を取得する。
 		log.Printf("SetContributionPoint: Fetching events between %s and %s", ts.Format("2006-01-02 15:04"), te.Format("2006-01-02 15:04"))
 

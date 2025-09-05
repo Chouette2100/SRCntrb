@@ -1,11 +1,11 @@
 module SRCntrb
 
-go 1.24.2
+go 1.25.1
 
 require (
 	github.com/Chouette2100/exsrapi/v2 v2.3.1
 	github.com/Chouette2100/srapi/v2 v2.3.4
-	github.com/Chouette2100/srdblib/v2 v2.3.5
+	github.com/Chouette2100/srdblib/v2 v2.3.9
 	github.com/go-gorp/gorp v2.2.0+incompatible
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/go-sql-driver/mysql v1.9.2 // indirect
+	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/goark/errs v1.1.0 // indirect
 	github.com/goark/sshql v0.2.0 // indirect
 	github.com/goark/sshql/mysqldrv v0.4.0 // indirect

@@ -52,7 +52,7 @@ func SetContributionPoint(
 		log.Printf("SetContributionPoint: Fetching events between %s and %s", ts.Format("2006-01-02 15:04"), te.Format("2006-01-02 15:04"))
 
 		evlist := &[]srdblib.Event{}
-		sqlst := "select * from event where endtime between ? and ? "
+		sqlst := "select " + uclm_event + " from event where endtime between ? and ? "
 		_, err = srdblib.Dbmap.Select(evlist, sqlst, ts, te)
 		if err != nil {
 			err = fmt.Errorf("SetContributionPoint: Error fetching events between %s and %s: %v", ts, te, err)
@@ -76,7 +76,7 @@ func SetContributionPoint(
 
 			// イベント参加ユーザーの一覧を作る
 			ulist := &[]srdblib.Eventuser{}
-			sqlst = "SELECT * FROM eventuser WHERE eventid = ? "
+			sqlst = "SELECT " + uclm_eventuser + " FROM eventuser WHERE eventid = ? "
 			_, err = srdblib.Dbmap.Select(ulist, sqlst, ev.Eventid)
 			if err != nil {
 				log.Printf("SetContributionPoint: Error fetching users for event %s: %v", ev.Eventid, err)
@@ -112,7 +112,7 @@ func SetContributionPoint(
 
 				// DBの貢献ポイントデータの最後の日時のデータを取得する
 				er := make([]srdblib.Eventrank, 0)
-				sqlst = "select * from eventrank "
+				sqlst = "select " + uclm_eventrank + " from eventrank "
 				sqlst += " where eventid = ? and userid = ? "
 				sqlst += " and ts = (select max(ts) from eventrank where eventid = ? and userid = ? ) "
 				sqlst += " order by norder "

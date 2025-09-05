@@ -33,9 +33,10 @@ import (
 00AB00 貢献ランキングの書き込みをユーザー単位のトランザクションとする
 00AB01 貢献ランキングの取得でエラーが置きたとき、または貢献ランキングが存在しない場合はスキップする
 00AC00 nday==0 のときは、現在時から1時間前までに終わったイベントを対象とする。
+200100 "select *"を使用せず、必要なカラムのリストを指定する。
 */
 
-const version = "00AC00"
+const version = "200100"
 
 // シャットダウンに関連する状態をまとめた構造体
 type AppShutdownManager struct {
@@ -68,6 +69,19 @@ func (sm *AppShutdownManager) CloseResources() {
 	// }
 	// 他のリソース解放処理
 	log.Println("Resources closed.")
+}
+
+var uclm_event string
+var uclm_eventuser string
+var uclm_eventrank string
+
+func init() {
+
+	// テーブル構造体からテーブルの絡むリストを作る
+	uclm_event = srdblib.ExtractStructColumns(srdblib.Event{})
+	uclm_eventuser = srdblib.ExtractStructColumns(srdblib.Eventuser{})
+	uclm_eventrank = srdblib.ExtractStructColumns(srdblib.Eventrank{})
+
 }
 
 // -------------------------------------------
@@ -139,7 +153,9 @@ func main() {
 	sdate := os.Getenv("STARTDATE")
 	if sdate == "" {
 		// 環境変数が設定されていない場合は、現在の日付を使用
-		dt = time.Now().Add(9 * time.Hour).Truncate(24 * time.Hour).Add(-9 * time.Hour)
+		// dt = time.Now().Add(9 * time.Hour).Truncate(24 * time.Hour).Add(-9 * time.Hour)
+		year, month, day := time.Now().Date()
+		dt = time.Date(year, month, day, 0, 0, 0, 0, time.Local)
 	} else {
 		// 環境変数から日付を取得
 		var err error

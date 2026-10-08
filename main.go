@@ -21,11 +21,12 @@ import (
 	"sync"
 	"syscall"
 
+	"database/sql"
 	"github.com/go-gorp/gorp"
 
 	"github.com/Chouette2100/exsrapi/v2"
 	"github.com/Chouette2100/srapi/v2"
-	"github.com/Chouette2100/srdblib/v2"
+	"github.com/Chouette2100/srdblib/v3"
 )
 
 /*
@@ -34,9 +35,10 @@ import (
 00AB01 貢献ランキングの取得でエラーが置きたとき、または貢献ランキングが存在しない場合はスキップする
 00AC00 nday==0 のときは、現在時から1時間前までに終わったイベントを対象とする。
 200100 "select *"を使用せず、必要なカラムのリストを指定する。
+200200 srdblib/v3に対応し、sops/age暗号化を導入しnixパッケージ化の準備を行う。
 */
 
-const version = "200100"
+const version = "200200"
 
 // シャットダウンに関連する状態をまとめた構造体
 type AppShutdownManager struct {
@@ -86,6 +88,9 @@ func init() {
 
 // -------------------------------------------
 
+var Db *sql.DB
+var Dbmap *gorp.DbMap
+
 func main() {
 
 	logfilename := "SRCntrb" + "_" + version + "_" + srapi.Version + "_" + srdblib.Version + "_" + exsrapi.Version + "_" + time.Now().Format("20060102") + ".txt"
@@ -102,18 +107,18 @@ func main() {
 	log.Printf("************************ %s *********************\n", logfilename)
 
 	// dbconfig := &srdblib.DBConfig{}
-	_, err = srdblib.OpenDb("DBConfig.yml")
+	Db, _, err = srdblib.OpenDb("DBConfig.enc.yml")
 	if err != nil {
 		log.Printf("srdblib.OpenDB returned err = %s\n", err.Error())
 		return
 	}
-	defer srdblib.Db.Close()
+	defer Db.Close()
 
 	dial := gorp.MySQLDialect{Engine: "InnoDB", Encoding: "utf8mb4"}
-	srdblib.Dbmap = &gorp.DbMap{Db: srdblib.Db, Dialect: dial, ExpandSliceArgs: true}
-	srdblib.Dbmap.AddTableWithName(srdblib.Event{}, "event").SetKeys(false, "Eventid")
-	srdblib.Dbmap.AddTableWithName(srdblib.Eventrank{}, "eventrank").SetKeys(false, "Eventid", "Userid", "Ts", "T_lsnid")
-	srdblib.Dbmap.AddTableWithName(srdblib.Timetable{}, "timetable").SetKeys(false, "Eventid", "Userid", "Sampletm1")
+	Dbmap = &gorp.DbMap{Db: Db, Dialect: dial, ExpandSliceArgs: true}
+	Dbmap.AddTableWithName(srdblib.Event{}, "event").SetKeys(false, "Eventid")
+	Dbmap.AddTableWithName(srdblib.Eventrank{}, "eventrank").SetKeys(false, "Eventid", "Userid", "Ts", "T_lsnid")
+	Dbmap.AddTableWithName(srdblib.Timetable{}, "timetable").SetKeys(false, "Eventid", "Userid", "Sampletm1")
 
 	// -------------------------------------
 

@@ -7,7 +7,7 @@ import (
 
 	// "github.com/Chouette2100/srapi/v2"
 	"github.com/Chouette2100/srapi/v2"
-	"github.com/Chouette2100/srdblib/v2"
+	"github.com/Chouette2100/srdblib/v3"
 	"github.com/go-gorp/gorp"
 
 	// "strings"
@@ -53,7 +53,7 @@ func SetContributionPoint(
 
 		evlist := &[]srdblib.Event{}
 		sqlst := "select " + uclm_event + " from event where endtime between ? and ? "
-		_, err = srdblib.Dbmap.Select(evlist, sqlst, ts, te)
+		_, err = Dbmap.Select(evlist, sqlst, ts, te)
 		if err != nil {
 			err = fmt.Errorf("SetContributionPoint: Error fetching events between %s and %s: %v", ts, te, err)
 			return
@@ -77,7 +77,7 @@ func SetContributionPoint(
 			// イベント参加ユーザーの一覧を作る
 			ulist := &[]srdblib.Eventuser{}
 			sqlst = "SELECT " + uclm_eventuser + " FROM eventuser WHERE eventid = ? "
-			_, err = srdblib.Dbmap.Select(ulist, sqlst, ev.Eventid)
+			_, err = Dbmap.Select(ulist, sqlst, ev.Eventid)
 			if err != nil {
 				log.Printf("SetContributionPoint: Error fetching users for event %s: %v", ev.Eventid, err)
 				continue
@@ -116,7 +116,7 @@ func SetContributionPoint(
 				sqlst += " where eventid = ? and userid = ? "
 				sqlst += " and ts = (select max(ts) from eventrank where eventid = ? and userid = ? ) "
 				sqlst += " order by norder "
-				_, err = srdblib.Dbmap.Select(&er, sqlst, ev.Eventid, u.Userno, ev.Eventid, u.Userno)
+				_, err = Dbmap.Select(&er, sqlst, ev.Eventid, u.Userno, ev.Eventid, u.Userno)
 				if err != nil {
 					err = fmt.Errorf("SetContributionPoint: Error fetching event rank for user %d in event %s: %v", u.Userno, ev.Eventid, err)
 					log.Println(err)
@@ -151,7 +151,7 @@ func SetContributionPoint(
 				// DBに貢献ポイントがない、または取得した貢献ポイントがDBにある貢献ポイントが一致しない
 				// 取得した貢献ポイントをDBに格納する
 				var tx *gorp.Transaction
-				tx, err = srdblib.Dbmap.Begin()
+				tx, err = Dbmap.Begin()
 				if err != nil {
 					err = fmt.Errorf("SetContributionPoint: Error starting transaction for user %d in event %s: %v", u.Userno, ev.Eventid, err)
 					log.Println(err)
@@ -191,7 +191,7 @@ func SetContributionPoint(
 					}
 
 					// DBに格納
-					err = srdblib.Dbmap.Insert(&ner)
+					err = Dbmap.Insert(&ner)
 					if err != nil {
 						err = fmt.Errorf("SetContributionPoint: Error inserting event rank for user %d in event %s: %v", u.Userno, ev.Eventid, err)
 						log.Println(err)
@@ -211,7 +211,7 @@ func SetContributionPoint(
 					Earnedpoint: 0,
 					Status:      1,
 				}
-				err = srdblib.Dbmap.Insert(&tt)
+				err = Dbmap.Insert(&tt)
 				if err != nil {
 					err = fmt.Errorf("SetContributionPoint: Error inserting timetable for user %d in event %s: %v", u.Userno, ev.Eventid, err)
 					log.Println(err)
